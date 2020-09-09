@@ -1,0 +1,16 @@
+- hosts: master, worker1
+  become: yes
+  tasks:
+    - name: Creating kubeadmin User
+      user: name=kubeadmin append=yes state=present createhome=yes shell=/bin/bash
+
+    - name: Allow 'kubeadmin' To have Passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        line: 'kubeadmin ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - name: Setup Authorized keys For kubeadmin User
+      authorized_key: user=kubeadmin key="{{item}}"
+      with_file:
+        - ~/.ssh/id_rsa.pub
